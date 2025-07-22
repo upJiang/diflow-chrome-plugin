@@ -86,76 +86,62 @@ async function copyExtensionFiles() {
 }
 
 async function generateManifest() {
-  const manifestTemplate = {
-    "manifest_version": 3,
-    "name": "Diflow Chrome Plugin",
-    "version": "1.0.0",
-    "description": "Diflow的chrome插件，用于获取当前网页的信息，以及小工具的快捷实用",
-    "permissions": [
-      "activeTab",
-      "debugger",
-      "storage",
-      "scripting"
-    ],
-    "host_permissions": ["<all_urls>"],
-    "background": {
-      "service_worker": "background/background.js"
-    },
-    "content_scripts": [{
-      "matches": ["<all_urls>"],
-      "js": ["content/content.js"],
-      "run_at": "document_start"
-    }],
-    "action": {
-      "default_popup": "popup/index.html",
-      "default_title": "Diflow工具",
-      "default_icon": {
-        "16": "icons/icon16.png",
-        "48": "icons/icon48.png",
-        "128": "icons/icon128.png"
-      }
-    },
-    "icons": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    },
-    "content_security_policy": {
-      "extension_pages": "script-src 'self'; object-src 'self';"
-    }
-  }
+  const sourceManifest = path.resolve(rootDir, 'manifest.json')
+  const targetManifest = path.resolve(distDir, 'manifest.json')
   
-  // 读取package.json获取版本信息
   try {
-    const packageJson = await fs.readJson(path.resolve(rootDir, 'package.json'))
-    manifestTemplate.version = packageJson.version || "1.0.0"
+    // 读取根目录的 manifest.json
+    const manifestData = await fs.readJson(sourceManifest)
+    
+    // 读取 package.json 获取版本信息
+    try {
+      const packageJson = await fs.readJson(path.resolve(rootDir, 'package.json'))
+      manifestData.version = packageJson.version || "1.0.0"
+    } catch (error) {
+      console.log('⚠️ 无法读取package.json，使用manifest中的默认版本')
+    }
+    
+    // 根据环境调整插件名称
+    if (process.env.NODE_ENV === 'development') {
+      manifestData.name = manifestData.name + ' (Dev)'
+      manifestData.action.default_title = manifestData.action.default_title + '(开发版)'
+    }
+    
+    // 写入目标文件
+    await fs.writeJson(targetManifest, manifestData, { spaces: 2 })
+    
   } catch (error) {
-    console.log('⚠️ 无法读取package.json，使用默认版本')
+    console.error('❌ 无法读取根目录的 manifest.json:', error.message)
+    throw new Error('请确保项目根目录存在 manifest.json 文件')
   }
-  
-  await fs.writeJson(
-    path.resolve(distDir, 'manifest.json'), 
-    manifestTemplate, 
-    { spaces: 2 }
-  )
 }
 
 async function copyIcons() {
   const iconsDir = path.resolve(rootDir, 'icons')
+  const distIconsDir = path.resolve(distDir, 'icons')
+  
   if (await fs.pathExists(iconsDir)) {
-    await fs.copy(iconsDir, path.resolve(distDir, 'icons'))
+    await fs.copy(iconsDir, distIconsDir)
   } else {
-    // 创建默认图标目录和占位符
-    await fs.ensureDir(path.resolve(distDir, 'icons'))
+    // 确保目标图标目录存在
+    await fs.ensureDir(distIconsDir)
     const iconSizes = [16, 48, 128]
     
+    let hasValidIcons = true
     for (const size of iconSizes) {
-      const iconPath = path.resolve(distDir, 'icons', `icon${size}.png`)
-      // 创建占位文件
-      await fs.writeFile(iconPath, '')
+      const iconPath = path.resolve(distIconsDir, `icon${size}.png`)
+      
+      // 检查文件是否存在且不为空
+      if (!await fs.pathExists(iconPath) || (await fs.stat(iconPath)).size === 0) {
+        hasValidIcons = false
+        // 只在构建时创建占位符（因为构建需要完整的文件）
+        await fs.writeFile(iconPath, '')
+      }
     }
     
-    console.log('⚠️ 警告: 未找到icons目录，已创建占位符文件，请添加实际的插件图标文件')
+    if (!hasValidIcons) {
+      console.log('⚠️ 警告: 未找到有效的图标文件，已创建占位符。请运行 "node create_simple_icons.js" 创建实际图标')
+    }
   }
 }
 

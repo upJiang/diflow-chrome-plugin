@@ -94,7 +94,7 @@
             
             &:hover {
               background: rgba($color-error, 0.05);
-              border-color: darken($color-error, 10%);
+              border-color: color.scale($color-error, $lightness: -17%);
             }
           }
         }
@@ -245,7 +245,7 @@
       color: $dark-text-color-primary;
       
       &:hover {
-        border-color: lighten($dark-border-color, 10%);
+        border-color: color.scale($dark-border-color, $lightness: 13%);
       }
     }
     

@@ -50,7 +50,10 @@ export default defineConfig(({ mode }) => {
     css: {
       preprocessorOptions: {
         scss: {
-          additionalData: `@import "@styles/variables.scss"; @import "@styles/mixins.scss";`
+          additionalData: `@use "sass:color"; @import "@styles/variables.scss"; @import "@styles/mixins.scss";`,
+          // 禁用弃用警告
+          quietDeps: true,
+          silenceDeprecations: ['legacy-js-api', 'import', 'global-builtin', 'color-functions']
         }
       }
     },
