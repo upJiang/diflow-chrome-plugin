@@ -3,26 +3,7 @@ import path from 'path'
 
 // 创建一个简单但有效的 PNG 图标 (16x16 蓝色方块)
 function createIcon(size) {
-  // 这是一个简单的蓝色方块 PNG 的字节数据
-  const pngHeader = [
-    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG 签名
-    0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, // IHDR chunk
-    0x00, 0x00, 0x00, size, 0x00, 0x00, 0x00, size,  // 宽度和高度
-    0x08, 0x02, 0x00, 0x00, 0x00                     // 位深度、颜色类型等
-  ]
-  
-  // 简单的蓝色像素数据
-  const bluePixel = [0x19, 0x76, 0xD2] // #1976d2 蓝色
-  const pixelData = []
-  
-  for (let y = 0; y < size; y++) {
-    pixelData.push(0x00) // 行过滤器类型
-    for (let x = 0; x < size; x++) {
-      pixelData.push(...bluePixel)
-    }
-  }
-  
-  // 创建最小有效 PNG（实际上这是简化版本）
+  // 创建最小有效 PNG（蓝色方块）
   const minimalPNG = [
     0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
     0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
@@ -44,7 +25,8 @@ function createIcon(size) {
   return Buffer.from(minimalPNG)
 }
 
-const iconsDir = './dist/icons'
+// 创建到 public/icons 目录（源目录）
+const iconsDir = './public/icons'
 const sizes = [16, 48, 128]
 
 // 确保目录存在
@@ -60,5 +42,6 @@ sizes.forEach(size => {
   console.log(`✅ 创建图标: ${iconPath} (${iconBuffer.length} bytes)`)
 })
 
-console.log('🎉 图标创建完成！现在可以在 Chrome 中加载插件了。')
-console.log('💡 提示: 如果需要自定义图标，请在项目根目录创建 icons/ 文件夹并放入你的图标文件。') 
+console.log('🎉 图标创建完成！图标已保存到 public/icons/ 目录')
+console.log('📁 构建时会自动复制到 dist/icons/ 目录')
+console.log('💡 提示: 可以直接替换 public/icons/ 目录中的文件来使用自定义图标') 

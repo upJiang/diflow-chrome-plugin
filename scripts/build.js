@@ -117,21 +117,29 @@ async function generateManifest() {
 }
 
 async function copyIcons() {
-  const iconsDir = path.resolve(rootDir, 'icons')
+  const publicIconsDir = path.resolve(rootDir, 'public/icons')
+  const legacyIconsDir = path.resolve(rootDir, 'icons') // 保持向后兼容
   const distIconsDir = path.resolve(distDir, 'icons')
   
-  if (await fs.pathExists(iconsDir)) {
-    await fs.copy(iconsDir, distIconsDir)
+  // 确保目标图标目录存在
+  await fs.ensureDir(distIconsDir)
+  
+  if (await fs.pathExists(publicIconsDir)) {
+    // 优先使用 public/icons 目录
+    await fs.copy(publicIconsDir, distIconsDir)
+    console.log('📁 从 public/icons/ 复制图标文件')
+  } else if (await fs.pathExists(legacyIconsDir)) {
+    // 兼容旧的 icons 目录
+    await fs.copy(legacyIconsDir, distIconsDir)
+    console.log('📁 从 icons/ 复制图标文件')
   } else {
-    // 确保目标图标目录存在
-    await fs.ensureDir(distIconsDir)
+    // 检查是否已有有效图标
     const iconSizes = [16, 48, 128]
-    
     let hasValidIcons = true
+    
     for (const size of iconSizes) {
       const iconPath = path.resolve(distIconsDir, `icon${size}.png`)
       
-      // 检查文件是否存在且不为空
       if (!await fs.pathExists(iconPath) || (await fs.stat(iconPath)).size === 0) {
         hasValidIcons = false
         // 只在构建时创建占位符（因为构建需要完整的文件）
@@ -140,7 +148,9 @@ async function copyIcons() {
     }
     
     if (!hasValidIcons) {
-      console.log('⚠️ 警告: 未找到有效的图标文件，已创建占位符。请运行 "node create_simple_icons.js" 创建实际图标')
+      console.log('⚠️ 警告: 未找到图标文件。请运行以下命令创建默认图标:')
+      console.log('   node create_simple_icons.js')
+      console.log('💡 或者手动将图标文件放入 public/icons/ 目录')
     }
   }
 }

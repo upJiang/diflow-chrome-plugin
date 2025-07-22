@@ -43,9 +43,11 @@ node create_simple_icons.js
 diflow-chrome-plugin/
 ├── manifest.json          # Chrome 插件配置文件（源文件）
 ├── create_simple_icons.js # 图标生成脚本
+├── public/                # 静态资源目录
+│   └── icons/             # 插件图标文件（源文件）
 ├── popup/                 # Vue 3 前端界面
 │   ├── src/              # 前端源码
-│   ├── public/           # 静态资源
+│   ├── public/           # 前端静态资源
 │   └── package.json      # 前端依赖
 ├── background/           # 后台服务脚本
 ├── content/             # 内容脚本（注入网页）
@@ -76,14 +78,21 @@ diflow-chrome-plugin/
 
 ## 🎨 自定义图标
 
-如果需要自定义图标：
+### 创建默认图标
+```bash
+# 生成默认的蓝色方块图标到 public/icons/
+node create_simple_icons.js
+```
 
-1. 在项目根目录创建 `icons/` 文件夹
-2. 放入以下文件：
-   - `icon16.png` (16x16 像素)
-   - `icon48.png` (48x48 像素) 
-   - `icon128.png` (128x128 像素)
-3. 重新构建插件
+### 使用自定义图标
+如果需要自定义图标，请将以下文件放入 `public/icons/` 目录：
+- `icon16.png` (16x16 像素)
+- `icon48.png` (48x48 像素) 
+- `icon128.png` (128x128 像素)
+
+构建时会自动复制到 `dist/icons/` 目录。
+
+**注意**: `public/icons/` 目录会提交到 git，确保团队成员都有相同的图标。
 
 ## 🔧 技术栈
 

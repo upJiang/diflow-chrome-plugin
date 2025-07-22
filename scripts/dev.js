@@ -83,25 +83,29 @@ async function generateManifest() {
 }
 
 async function copyIcons() {
-  const iconsDir = path.resolve(rootDir, 'icons')
+  const publicIconsDir = path.resolve(rootDir, 'public/icons')
+  const legacyIconsDir = path.resolve(rootDir, 'icons') // 保持向后兼容
   const distIconsDir = path.resolve(distDir, 'icons')
   
-  if (await fs.pathExists(iconsDir)) {
-    // 如果源图标目录存在，直接复制
-    await fs.copy(iconsDir, distIconsDir)
+  // 确保目标图标目录存在
+  await fs.ensureDir(distIconsDir)
+  
+  if (await fs.pathExists(publicIconsDir)) {
+    // 优先使用 public/icons 目录
+    await fs.copy(publicIconsDir, distIconsDir)
+  } else if (await fs.pathExists(legacyIconsDir)) {
+    // 兼容旧的 icons 目录
+    await fs.copy(legacyIconsDir, distIconsDir)
   } else {
-    // 确保目标图标目录存在
-    await fs.ensureDir(distIconsDir)
-    
-    // 只有当图标文件不存在时才创建占位符
+    // 检查是否已有有效图标
     const iconSizes = [16, 48, 128]
+    
     for (const size of iconSizes) {
       const iconPath = path.resolve(distIconsDir, `icon${size}.png`)
       
-      // 检查文件是否存在且不为空
       if (!await fs.pathExists(iconPath) || (await fs.stat(iconPath)).size === 0) {
-        console.log(`⚠️ 警告: 图标 icon${size}.png 不存在或为空，请运行 'node create_simple_icons.js' 创建图标`)
-        // 不创建空文件，让用户手动生成
+        console.log(`⚠️ 警告: 图标 icon${size}.png 不存在。请运行 'node create_simple_icons.js' 创建图标`)
+        // 开发模式不创建空文件，让用户主动生成
       }
     }
   }
