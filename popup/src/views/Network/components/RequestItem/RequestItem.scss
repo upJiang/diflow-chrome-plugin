@@ -1,0 +1,187 @@
+.request-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  border-bottom: 1px solid $border-color-light;
+  cursor: pointer;
+  transition: all $transition-fast;
+  
+  &:hover {
+    background: $background-secondary;
+  }
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  &--selected {
+    background: rgba($color-primary, 0.1);
+    border-left: 3px solid $color-primary;
+  }
+  
+  &--error {
+    border-left: 3px solid $color-error;
+    
+    .request-url {
+      color: $color-error;
+    }
+  }
+  
+  .request-method {
+    flex-shrink: 0;
+    
+    .method-badge {
+      @include tag-base;
+      font-size: 10px;
+      min-width: 40px;
+      text-align: center;
+      
+      &.get {
+        @include tag-success;
+      }
+      
+      &.post {
+        @include tag-info;
+      }
+      
+      &.put {
+        @include tag-warning;
+      }
+      
+      &.delete {
+        @include tag-error;
+      }
+      
+      &.patch {
+        @include tag-warning;
+      }
+      
+      &.head,
+      &.options {
+        @include tag-base;
+        background: rgba($text-color-secondary, 0.1);
+        color: $text-color-secondary;
+      }
+    }
+  }
+  
+  .request-info {
+    flex: 1;
+    min-width: 0;
+    
+    .request-url {
+      @include text-truncate;
+      font-size: $font-size-small;
+      font-weight: $font-weight-medium;
+      color: $text-color-primary;
+      margin-bottom: 2px;
+    }
+    
+    .request-meta {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      font-size: $font-size-small;
+      
+      .status-code {
+        font-weight: $font-weight-bold;
+        
+        &.success {
+          color: $status-200;
+        }
+        
+        &.warning {
+          color: $status-300;
+        }
+        
+        &.error {
+          color: $status-400;
+        }
+        
+        &.default {
+          color: $text-color-secondary;
+        }
+      }
+      
+      .response-time {
+        color: $text-color-secondary;
+      }
+      
+      .request-time {
+        color: $text-color-tertiary;
+        margin-left: auto;
+      }
+    }
+  }
+  
+  .request-actions {
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity $transition-fast;
+    
+    .action-btn {
+      @include button-text;
+      padding: 4px;
+      border-radius: $border-radius-small;
+      color: $text-color-tertiary;
+      
+      &:hover {
+        color: $text-color-primary;
+        background: $background-tertiary;
+      }
+    }
+  }
+  
+  &:hover .request-actions {
+    opacity: 1;
+  }
+}
+
+// 暗色主题
+[data-theme="dark"] {
+  .request-item {
+    border-bottom-color: $dark-border-color;
+    
+    &:hover {
+      background: $dark-background-secondary;
+    }
+    
+    &--selected {
+      background: rgba($color-primary, 0.15);
+    }
+    
+    .request-info {
+      .request-url {
+        color: $dark-text-color-primary;
+      }
+      
+      .request-meta {
+        .response-time {
+          color: $dark-text-color-secondary;
+        }
+        
+        .request-time {
+          color: $dark-text-color-tertiary;
+        }
+      }
+    }
+    
+    .request-actions .action-btn {
+      color: $dark-text-color-tertiary;
+      
+      &:hover {
+        color: $dark-text-color-primary;
+        background: $dark-background-tertiary;
+      }
+    }
+    
+    .method-badge {
+      &.head,
+      &.options {
+        background: rgba($dark-text-color-secondary, 0.2);
+        color: $dark-text-color-secondary;
+      }
+    }
+  }
+} 

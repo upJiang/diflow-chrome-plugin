@@ -1,0 +1,255 @@
+.request-detail {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  
+  .detail-header {
+    padding: $spacing-md;
+    background: $background-secondary;
+    border-bottom: 1px solid $border-color;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-shrink: 0;
+    
+    .header-info {
+      flex: 1;
+      min-width: 0;
+      
+      .request-title {
+        font-size: $font-size-base;
+        font-weight: $font-weight-bold;
+        color: $text-color-primary;
+        margin: 0 0 $spacing-xs 0;
+        @include text-truncate;
+      }
+      
+      .request-summary {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        flex-wrap: wrap;
+        
+        .status-code {
+          font-weight: $font-weight-bold;
+          
+          &.success { color: $status-200; }
+          &.warning { color: $status-300; }
+          &.error { color: $status-400; }
+          &.default { color: $text-color-secondary; }
+        }
+        
+        .response-time,
+        .request-time {
+          font-size: $font-size-small;
+          color: $text-color-secondary;
+        }
+      }
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: $spacing-xs;
+      flex-shrink: 0;
+      
+      .action-btn {
+        @include button-text;
+        padding: $spacing-xs;
+        border-radius: $border-radius-small;
+        color: $text-color-secondary;
+        
+        &:hover {
+          color: $text-color-primary;
+          background: $background-tertiary;
+        }
+        
+        &.close-btn:hover {
+          background: rgba($color-error, 0.1);
+          color: $color-error;
+        }
+      }
+    }
+  }
+  
+  .detail-content {
+    flex: 1;
+    @include scrollable;
+    padding: $spacing-md;
+    
+    .detail-section {
+      margin-bottom: $spacing-lg;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      .section-header {
+        margin-bottom: $spacing-sm;
+        
+        .section-title {
+          font-size: $font-size-base;
+          font-weight: $font-weight-bold;
+          color: $text-color-primary;
+          margin: 0;
+        }
+      }
+      
+      .section-content {
+        .info-grid {
+          display: grid;
+          gap: $spacing-sm;
+          
+          .info-item {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: $spacing-sm;
+            align-items: center;
+            
+            .info-label {
+              font-size: $font-size-small;
+              color: $text-color-secondary;
+              font-weight: $font-weight-medium;
+              white-space: nowrap;
+            }
+            
+            .info-value {
+              font-size: $font-size-small;
+              color: $text-color-primary;
+              word-break: break-all;
+            }
+          }
+        }
+        
+        .headers-list {
+          .header-item {
+            display: flex;
+            gap: $spacing-sm;
+            padding: $spacing-xs 0;
+            border-bottom: 1px solid $border-color-light;
+            
+            &:last-child {
+              border-bottom: none;
+            }
+            
+            .header-key {
+              font-size: $font-size-small;
+              color: $text-color-secondary;
+              font-weight: $font-weight-medium;
+              min-width: 120px;
+              flex-shrink: 0;
+            }
+            
+            .header-value {
+              font-size: $font-size-small;
+              color: $text-color-primary;
+              word-break: break-all;
+              flex: 1;
+            }
+          }
+        }
+        
+        .code-content {
+          background: $background-tertiary;
+          border: 1px solid $border-color;
+          border-radius: $border-radius;
+          padding: $spacing-sm;
+          
+          pre {
+            margin: 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: $font-size-small;
+            line-height: 1.4;
+            color: $text-color-primary;
+            white-space: pre-wrap;
+            word-break: break-word;
+          }
+        }
+        
+        .empty-content {
+          padding: $spacing-md;
+          text-align: center;
+          color: $text-color-tertiary;
+          font-size: $font-size-small;
+          font-style: italic;
+        }
+      }
+    }
+  }
+}
+
+// 暗色主题
+[data-theme="dark"] {
+  .request-detail {
+    .detail-header {
+      background: $dark-background-secondary;
+      border-bottom-color: $dark-border-color;
+      
+      .header-info {
+        .request-title {
+          color: $dark-text-color-primary;
+        }
+        
+        .request-summary {
+          .response-time,
+          .request-time {
+            color: $dark-text-color-secondary;
+          }
+        }
+      }
+      
+      .header-actions .action-btn {
+        color: $dark-text-color-secondary;
+        
+        &:hover {
+          color: $dark-text-color-primary;
+          background: $dark-background-tertiary;
+        }
+      }
+    }
+    
+    .detail-content {
+      .detail-section {
+        .section-title {
+          color: $dark-text-color-primary;
+        }
+        
+        .section-content {
+          .info-grid .info-item {
+            .info-label {
+              color: $dark-text-color-secondary;
+            }
+            
+            .info-value {
+              color: $dark-text-color-primary;
+            }
+          }
+          
+          .headers-list .header-item {
+            border-bottom-color: $dark-border-color;
+            
+            .header-key {
+              color: $dark-text-color-secondary;
+            }
+            
+            .header-value {
+              color: $dark-text-color-primary;
+            }
+          }
+          
+          .code-content {
+            background: $dark-background-tertiary;
+            border-color: $dark-border-color;
+            
+            pre {
+              color: $dark-text-color-primary;
+            }
+          }
+          
+          .empty-content {
+            color: $dark-text-color-tertiary;
+          }
+        }
+      }
+    }
+  }
+} 

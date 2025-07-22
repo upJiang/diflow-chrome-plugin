@@ -1,0 +1,89 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  padding: 0 $spacing-md;
+  background: $background-primary;
+  border-bottom: 1px solid $border-color;
+  
+  .header-left {
+    display: flex;
+    align-items: center;
+  }
+  
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+  
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    cursor: pointer;
+    padding: $spacing-xs;
+    border-radius: $border-radius;
+    transition: background-color $transition-fast;
+    
+    &:hover {
+      background: $background-secondary;
+    }
+    
+    .logo-icon {
+      color: $color-primary;
+    }
+    
+    .logo-text {
+      font-weight: $font-weight-bold;
+      font-size: $font-size-large;
+      color: $text-color-primary;
+    }
+  }
+  
+  .theme-toggle,
+  .website-btn {
+    @include button-text;
+    padding: $spacing-xs;
+    border-radius: $border-radius;
+    color: $text-color-secondary;
+    
+    &:hover {
+      color: $text-color-primary;
+      background: $background-secondary;
+    }
+    
+    svg {
+      display: block;
+    }
+  }
+}
+
+// 暗色主题
+[data-theme="dark"] {
+  .header {
+    background: $dark-background-primary;
+    border-bottom-color: $dark-border-color;
+    
+    .logo {
+      &:hover {
+        background: $dark-background-secondary;
+      }
+      
+      .logo-text {
+        color: $dark-text-color-primary;
+      }
+    }
+    
+    .theme-toggle,
+    .website-btn {
+      color: $dark-text-color-secondary;
+      
+      &:hover {
+        color: $dark-text-color-primary;
+        background: $dark-background-secondary;
+      }
+    }
+  }
+} 

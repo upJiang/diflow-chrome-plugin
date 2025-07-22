@@ -1,0 +1,81 @@
+.tab-bar {
+  display: flex;
+  align-items: center;
+  height: 56px;
+  background: $background-primary;
+  border-top: 1px solid $border-color;
+  padding: 0 $spacing-xs;
+  
+  .tab-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: $spacing-xs;
+    text-decoration: none;
+    color: $text-color-secondary;
+    transition: color $transition-fast;
+    border-radius: $border-radius;
+    min-height: 44px;
+    
+    &:hover {
+      color: $text-color-primary;
+      background: $background-secondary;
+    }
+    
+    &.active {
+      color: $color-primary;
+    }
+    
+    .tab-icon {
+      margin-bottom: 2px;
+    }
+    
+    .tab-label {
+      font-size: 10px;
+      line-height: 1;
+      font-weight: $font-weight-medium;
+    }
+    
+    .tab-badge {
+      position: absolute;
+      top: 2px;
+      right: 8px;
+      background: $color-error;
+      color: white;
+      font-size: 9px;
+      font-weight: $font-weight-bold;
+      padding: 1px 4px;
+      border-radius: 8px;
+      min-width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+  }
+}
+
+// 暗色主题
+[data-theme="dark"] {
+  .tab-bar {
+    background: $dark-background-primary;
+    border-top-color: $dark-border-color;
+    
+    .tab-item {
+      color: $dark-text-color-secondary;
+      
+      &:hover {
+        color: $dark-text-color-primary;
+        background: $dark-background-secondary;
+      }
+      
+      &.active {
+        color: $color-primary;
+      }
+    }
+  }
+} 

@@ -1,0 +1,199 @@
+.console-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  
+  .console-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $spacing-sm $spacing-md;
+    background: $background-secondary;
+    border-bottom: 1px solid $border-color;
+    flex-shrink: 0;
+    
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: $spacing-xs;
+    }
+    
+    .log-filters {
+      display: flex;
+      gap: $spacing-xs;
+      overflow-x: auto;
+      
+      .filter-btn {
+        @include button-text;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px $spacing-sm;
+        border-radius: $border-radius-small;
+        white-space: nowrap;
+        font-size: $font-size-small;
+        
+        &.active {
+          background: $color-primary;
+          color: white;
+        }
+        
+        .filter-icon {
+          width: 12px;
+          height: 12px;
+          border-radius: 2px;
+          
+          &.all {
+            background: $text-color-secondary;
+          }
+          
+          &.error {
+            @include status-error;
+          }
+          
+          &.warn {
+            @include status-warn;
+          }
+          
+          &.log {
+            @include status-log;
+          }
+          
+          &.info {
+            @include status-info;
+          }
+          
+          &.debug {
+            @include status-debug;
+          }
+        }
+        
+        .filter-count {
+          background: rgba(255, 255, 255, 0.2);
+          padding: 1px 4px;
+          border-radius: 8px;
+          font-size: 10px;
+          min-width: 18px;
+          text-align: center;
+        }
+        
+        &.active .filter-count {
+          background: rgba(255, 255, 255, 0.3);
+        }
+      }
+    }
+    
+    .tool-btn {
+      @include button-text;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px $spacing-xs;
+      border-radius: $border-radius-small;
+      font-size: $font-size-small;
+      color: $text-color-secondary;
+      
+      &:hover:not(:disabled) {
+        color: $text-color-primary;
+        background: $background-tertiary;
+      }
+      
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+  
+  .console-content {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    
+    .loading-state,
+    .empty-state {
+      @include center-flex;
+      flex-direction: column;
+      height: 100%;
+      padding: $spacing-lg;
+      text-align: center;
+      color: $text-color-secondary;
+      
+      .loading-spinner {
+        @include loading-spinner;
+        margin-bottom: $spacing-sm;
+      }
+      
+      svg {
+        margin-bottom: $spacing-md;
+        opacity: 0.5;
+      }
+      
+      h3 {
+        margin: 0 0 $spacing-xs 0;
+        font-size: $font-size-large;
+        color: $text-color-primary;
+      }
+      
+      p {
+        margin: 0;
+        font-size: $font-size-small;
+        line-height: 1.4;
+      }
+    }
+    
+    .console-logs {
+      @include scrollable;
+      height: 100%;
+    }
+  }
+}
+
+// 暗色主题
+[data-theme="dark"] {
+  .console-view {
+    .console-toolbar {
+      background: $dark-background-secondary;
+      border-bottom-color: $dark-border-color;
+      
+      .log-filters .filter-btn {
+        color: $dark-text-color-secondary;
+        
+        &:hover {
+          color: $dark-text-color-primary;
+        }
+        
+        .filter-icon.all {
+          background: $dark-text-color-secondary;
+        }
+      }
+      
+      .tool-btn {
+        color: $dark-text-color-secondary;
+        
+        &:hover:not(:disabled) {
+          color: $dark-text-color-primary;
+          background: $dark-background-tertiary;
+        }
+      }
+    }
+    
+    .console-content {
+      .loading-state,
+      .empty-state {
+        color: $dark-text-color-secondary;
+        
+        h3 {
+          color: $dark-text-color-primary;
+        }
+      }
+    }
+  }
+} 

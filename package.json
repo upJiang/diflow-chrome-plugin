@@ -1,0 +1,27 @@
+{
+  "name": "diflow-chrome-plugin",
+  "version": "1.0.0",
+  "description": "Diflow的chrome插件，用于获取当前网页的信息，以及小工具的快捷实用",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "build": "node scripts/build.js",
+    "build:zip": "node scripts/build.js --zip",
+    "clean": "rimraf dist",
+    "popup:dev": "cd popup && yarn dev",
+    "popup:build": "cd popup && yarn build",
+    "install:all": "yarn install && cd popup && yarn install"
+  },
+  "devDependencies": {
+    "archiver": "^6.0.1",
+    "chokidar": "^3.5.3",
+    "fs-extra": "^11.1.1",
+    "lodash-es": "^4.17.21",
+    "rimraf": "^5.0.1",
+    "vite": "^4.4.9"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "packageManager": "yarn@3.6.4"
+}

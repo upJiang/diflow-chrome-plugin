@@ -1,0 +1,192 @@
+.network-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  
+  .network-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $spacing-sm $spacing-md;
+    background: $background-secondary;
+    border-bottom: 1px solid $border-color;
+    flex-shrink: 0;
+    gap: $spacing-md;
+    
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+    }
+    
+    .request-filters {
+      display: flex;
+      gap: $spacing-xs;
+      
+      .filter-btn {
+        @include button-text;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px $spacing-sm;
+        border-radius: $border-radius-small;
+        white-space: nowrap;
+        font-size: $font-size-small;
+        
+        &.active {
+          background: $color-primary;
+          color: white;
+        }
+        
+        .filter-count {
+          background: rgba(255, 255, 255, 0.2);
+          padding: 1px 4px;
+          border-radius: 8px;
+          font-size: 10px;
+          min-width: 18px;
+          text-align: center;
+        }
+        
+        &.active .filter-count {
+          background: rgba(255, 255, 255, 0.3);
+        }
+      }
+    }
+    
+    .stats {
+      .stat-item {
+        font-size: $font-size-small;
+        color: $text-color-secondary;
+      }
+    }
+    
+    .tool-btn {
+      @include button-text;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px $spacing-xs;
+      border-radius: $border-radius-small;
+      font-size: $font-size-small;
+      color: $text-color-secondary;
+      
+      &:hover:not(:disabled) {
+        color: $text-color-primary;
+        background: $background-tertiary;
+      }
+      
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+  
+  .network-content {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    
+    .loading-state,
+    .empty-state {
+      @include center-flex;
+      flex-direction: column;
+      height: 100%;
+      padding: $spacing-lg;
+      text-align: center;
+      color: $text-color-secondary;
+      
+      .loading-spinner {
+        @include loading-spinner;
+        margin-bottom: $spacing-sm;
+      }
+      
+      svg {
+        margin-bottom: $spacing-md;
+        opacity: 0.5;
+      }
+      
+      h3 {
+        margin: 0 0 $spacing-xs 0;
+        font-size: $font-size-large;
+        color: $text-color-primary;
+      }
+      
+      p {
+        margin: 0;
+        font-size: $font-size-small;
+        line-height: 1.4;
+      }
+    }
+    
+    .network-requests {
+      display: flex;
+      height: 100%;
+      
+      .request-list {
+        width: 50%;
+        min-width: 250px;
+        @include scrollable;
+        border-right: 1px solid $border-color;
+      }
+      
+      .request-detail {
+        flex: 1;
+        @include scrollable;
+      }
+    }
+  }
+}
+
+// 暗色主题
+[data-theme="dark"] {
+  .network-view {
+    .network-toolbar {
+      background: $dark-background-secondary;
+      border-bottom-color: $dark-border-color;
+      
+      .request-filters .filter-btn {
+        color: $dark-text-color-secondary;
+        
+        &:hover {
+          color: $dark-text-color-primary;
+        }
+      }
+      
+      .stats .stat-item {
+        color: $dark-text-color-secondary;
+      }
+      
+      .tool-btn {
+        color: $dark-text-color-secondary;
+        
+        &:hover:not(:disabled) {
+          color: $dark-text-color-primary;
+          background: $dark-background-tertiary;
+        }
+      }
+    }
+    
+    .network-content {
+      .loading-state,
+      .empty-state {
+        color: $dark-text-color-secondary;
+        
+        h3 {
+          color: $dark-text-color-primary;
+        }
+      }
+      
+      .network-requests .request-list {
+        border-right-color: $dark-border-color;
+      }
+    }
+  }
+} 

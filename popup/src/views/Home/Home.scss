@@ -1,0 +1,279 @@
+.home-view {
+  @include scrollable;
+  height: 100%;
+  padding: $spacing-md;
+  
+  .welcome-section {
+    text-align: center;
+    padding: $spacing-xl 0;
+    border-bottom: 1px solid $border-color-light;
+    margin-bottom: $spacing-lg;
+    
+    .welcome-header {
+      margin-bottom: $spacing-lg;
+      
+      .welcome-title {
+        font-size: $font-size-xl;
+        font-weight: $font-weight-bold;
+        color: $text-color-primary;
+        margin-bottom: $spacing-xs;
+      }
+      
+      .welcome-subtitle {
+        font-size: $font-size-base;
+        color: $text-color-secondary;
+        margin: 0;
+      }
+    }
+    
+    .quick-actions {
+      .action-btn {
+        @include button-primary;
+        gap: $spacing-sm;
+        
+        svg {
+          flex-shrink: 0;
+        }
+      }
+    }
+  }
+  
+  .stats-section {
+    margin-bottom: $spacing-lg;
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: $spacing-md;
+      
+      .stat-card {
+        @include card-hover;
+        display: flex;
+        align-items: center;
+        gap: $spacing-md;
+        
+        .stat-icon {
+          width: 48px;
+          height: 48px;
+          border-radius: $border-radius;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          
+          &.console {
+            background: rgba($status-log, 0.1);
+            color: $status-log;
+          }
+          
+          &.network {
+            background: rgba($color-info, 0.1);
+            color: $color-info;
+          }
+        }
+        
+        .stat-content {
+          flex: 1;
+          min-width: 0;
+          
+          .stat-number {
+            font-size: $font-size-xl;
+            font-weight: $font-weight-bold;
+            color: $text-color-primary;
+            line-height: 1.2;
+          }
+          
+          .stat-label {
+            font-size: $font-size-small;
+            color: $text-color-secondary;
+            margin-bottom: 2px;
+          }
+          
+          .stat-detail {
+            font-size: $font-size-small;
+            
+            .error-count {
+              color: $color-error;
+              font-weight: $font-weight-medium;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  .recent-errors-section,
+  .actions-section {
+    margin-bottom: $spacing-lg;
+    
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: $spacing-md;
+      
+      .section-title {
+        font-size: $font-size-large;
+        font-weight: $font-weight-bold;
+        color: $text-color-primary;
+        margin: 0;
+      }
+      
+      .view-all-btn {
+        @include button-text;
+        font-size: $font-size-small;
+      }
+    }
+    
+    .error-list {
+      .error-item {
+        display: flex;
+        align-items: flex-start;
+        gap: $spacing-sm;
+        padding: $spacing-sm;
+        border: 1px solid $border-color-light;
+        border-radius: $border-radius;
+        margin-bottom: $spacing-xs;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+        
+        .error-type {
+          @include tag-error;
+          flex-shrink: 0;
+        }
+        
+        .error-content {
+          flex: 1;
+          min-width: 0;
+          
+          .error-message {
+            @include text-truncate;
+            font-size: $font-size-small;
+            color: $text-color-primary;
+            margin-bottom: 2px;
+          }
+          
+          .error-time {
+            font-size: $font-size-small;
+            color: $text-color-tertiary;
+          }
+        }
+      }
+    }
+    
+    .action-list {
+      .action-item {
+        @include button-text;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: $spacing-md;
+        padding: $spacing-md;
+        border: 1px solid $border-color;
+        border-radius: $border-radius;
+        margin-bottom: $spacing-sm;
+        text-align: left;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+        
+        &:hover {
+          border-color: $color-primary;
+          background: rgba($color-primary, 0.05);
+        }
+        
+        .action-icon {
+          width: 40px;
+          height: 40px;
+          background: $background-secondary;
+          border-radius: $border-radius;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: $text-color-secondary;
+          flex-shrink: 0;
+        }
+        
+        .action-content {
+          flex: 1;
+          min-width: 0;
+          
+          .action-title {
+            font-size: $font-size-base;
+            font-weight: $font-weight-medium;
+            color: $text-color-primary;
+            margin-bottom: 2px;
+          }
+          
+          .action-desc {
+            font-size: $font-size-small;
+            color: $text-color-secondary;
+            line-height: 1.4;
+          }
+        }
+      }
+    }
+  }
+}
+
+// 暗色主题
+[data-theme="dark"] {
+  .home-view {
+    .welcome-section {
+      border-bottom-color: $dark-border-color;
+      
+      .welcome-title {
+        color: $dark-text-color-primary;
+      }
+      
+      .welcome-subtitle {
+        color: $dark-text-color-secondary;
+      }
+    }
+    
+    .stats-grid .stat-card {
+      .stat-content {
+        .stat-number {
+          color: $dark-text-color-primary;
+        }
+        
+        .stat-label {
+          color: $dark-text-color-secondary;
+        }
+      }
+    }
+    
+    .section-title {
+      color: $dark-text-color-primary;
+    }
+    
+    .error-list .error-item {
+      border-color: $dark-border-color;
+      
+      .error-content .error-message {
+        color: $dark-text-color-primary;
+      }
+    }
+    
+    .action-list .action-item {
+      border-color: $dark-border-color;
+      
+      .action-icon {
+        background: $dark-background-tertiary;
+        color: $dark-text-color-secondary;
+      }
+      
+      .action-content {
+        .action-title {
+          color: $dark-text-color-primary;
+        }
+        
+        .action-desc {
+          color: $dark-text-color-secondary;
+        }
+      }
+    }
+  }
+} 

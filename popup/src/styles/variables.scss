@@ -1,0 +1,105 @@
+// 颜色系统
+$color-primary: #1976d2;
+$color-primary-light: #42a5f5;
+$color-primary-dark: #1565c0;
+
+$color-success: #4caf50;
+$color-warning: #ff9800;
+$color-error: #f44336;
+$color-info: #2196f3;
+
+// 文字颜色
+$text-color-primary: #333333;
+$text-color-secondary: #666666;
+$text-color-tertiary: #999999;
+$text-color-disabled: #cccccc;
+
+// 背景颜色
+$background-primary: #ffffff;
+$background-secondary: #f5f5f5;
+$background-tertiary: #fafafa;
+
+// 边框颜色
+$border-color: #e0e0e0;
+$border-color-light: #f0f0f0;
+$border-color-dark: #d0d0d0;
+
+// 阴影
+$shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1);
+$shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.12);
+$shadow-heavy: 0 6px 16px rgba(0, 0, 0, 0.15);
+
+// 圆角
+$border-radius: 4px;
+$border-radius-small: 2px;
+$border-radius-large: 8px;
+$border-radius-round: 50%;
+
+// 字体
+$font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+$font-size-small: 12px;
+$font-size-base: 14px;
+$font-size-large: 16px;
+$font-size-xl: 18px;
+$font-size-xxl: 20px;
+
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-bold: 600;
+
+$line-height: 1.6;
+
+// 间距
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 12px;
+$spacing-lg: 16px;
+$spacing-xl: 20px;
+$spacing-xxl: 24px;
+
+// 滚动条
+$scrollbar-width: 6px;
+$scrollbar-track: #f1f1f1;
+$scrollbar-thumb: #c1c1c1;
+$scrollbar-thumb-hover: #a8a8a8;
+
+// 状态标签颜色
+$status-log: #2196f3;
+$status-warn: #ff9800;
+$status-error: #f44336;
+$status-info: #4caf50;
+$status-debug: #9c27b0;
+
+// 网络请求状态颜色
+$status-200: #4caf50;  // 成功
+$status-300: #ff9800;  // 重定向
+$status-400: #f44336;  // 客户端错误
+$status-500: #e91e63;  // 服务器错误
+
+// 暗色主题变量
+$dark-background-primary: #1e1e1e;
+$dark-background-secondary: #2d2d2d;
+$dark-background-tertiary: #3d3d3d;
+
+$dark-text-color-primary: #ffffff;
+$dark-text-color-secondary: #cccccc;
+$dark-text-color-tertiary: #999999;
+
+$dark-border-color: #404040;
+$dark-scrollbar-track: #2d2d2d;
+$dark-scrollbar-thumb: #555555;
+$dark-scrollbar-thumb-hover: #666666;
+
+// z-index 层级
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 1040;
+$z-index-modal: 1050;
+$z-index-popover: 1060;
+$z-index-tooltip: 1070;
+
+// 过渡动画
+$transition-fast: 0.15s ease;
+$transition-normal: 0.3s ease;
+$transition-slow: 0.5s ease; 

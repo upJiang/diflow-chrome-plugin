@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+popup/node_modules/
+
+# Build outputs
+dist/
+popup/dist/
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cache
+.cache/
+.vite/
+.yarn/cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Archive files
+*.zip
+*.tar.gz
+
+# Chrome extension development
+*.crx
+*.pem 

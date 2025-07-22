@@ -1,0 +1,260 @@
+.settings-view {
+  @include scrollable;
+  height: 100%;
+  padding: $spacing-md;
+  
+  .settings-header {
+    margin-bottom: $spacing-lg;
+    
+    .settings-title {
+      font-size: $font-size-xl;
+      font-weight: $font-weight-bold;
+      color: $text-color-primary;
+      margin-bottom: $spacing-xs;
+    }
+    
+    .settings-subtitle {
+      font-size: $font-size-base;
+      color: $text-color-secondary;
+      margin: 0;
+    }
+  }
+  
+  .settings-content {
+    .settings-section {
+      margin-bottom: $spacing-xl;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      .section-header {
+        margin-bottom: $spacing-md;
+        
+        .section-title {
+          font-size: $font-size-large;
+          font-weight: $font-weight-bold;
+          color: $text-color-primary;
+          margin: 0;
+        }
+      }
+      
+      .setting-items {
+        .setting-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: $spacing-md;
+          border: 1px solid $border-color-light;
+          border-radius: $border-radius;
+          margin-bottom: $spacing-sm;
+          
+          &:last-child {
+            margin-bottom: 0;
+          }
+          
+          .setting-info {
+            flex: 1;
+            min-width: 0;
+            margin-right: $spacing-md;
+            
+            .setting-name {
+              font-size: $font-size-base;
+              font-weight: $font-weight-medium;
+              color: $text-color-primary;
+              margin-bottom: 2px;
+            }
+            
+            .setting-desc {
+              font-size: $font-size-small;
+              color: $text-color-secondary;
+              line-height: 1.4;
+            }
+          }
+          
+          .setting-control {
+            flex-shrink: 0;
+          }
+        }
+      }
+      
+      .action-buttons {
+        display: flex;
+        gap: $spacing-sm;
+        
+        .action-btn {
+          @include button-secondary;
+          display: flex;
+          align-items: center;
+          gap: $spacing-sm;
+          
+          &.danger {
+            border-color: $color-error;
+            color: $color-error;
+            
+            &:hover {
+              background: rgba($color-error, 0.05);
+              border-color: darken($color-error, 10%);
+            }
+          }
+        }
+      }
+      
+      .about-info {
+        .about-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: $spacing-sm $spacing-md;
+          border-bottom: 1px solid $border-color-light;
+          
+          &:last-child {
+            border-bottom: none;
+          }
+          
+          .about-label {
+            font-size: $font-size-base;
+            color: $text-color-secondary;
+          }
+          
+          .about-value {
+            font-size: $font-size-base;
+            color: $text-color-primary;
+            font-weight: $font-weight-medium;
+          }
+          
+          .link-btn {
+            @include button-text;
+            color: $color-primary;
+            padding: 2px $spacing-xs;
+            
+            &:hover {
+              background: rgba($color-primary, 0.1);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// 开关组件样式
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: $border-color;
+    transition: $transition-fast;
+    border-radius: 12px;
+    
+    &:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: $transition-fast;
+      border-radius: 50%;
+    }
+  }
+  
+  input:checked + .slider {
+    background-color: $color-primary;
+  }
+  
+  input:checked + .slider:before {
+    transform: translateX(20px);
+  }
+  
+  input:focus + .slider {
+    box-shadow: 0 0 0 2px rgba($color-primary, 0.2);
+  }
+}
+
+// 选择框样式
+.select-input {
+  @include input-base;
+  background: $background-primary;
+  cursor: pointer;
+  padding-right: $spacing-lg;
+  
+  &:hover {
+    border-color: $border-color-dark;
+  }
+}
+
+// 暗色主题
+[data-theme="dark"] {
+  .settings-view {
+    .settings-title {
+      color: $dark-text-color-primary;
+    }
+    
+    .settings-subtitle {
+      color: $dark-text-color-secondary;
+    }
+    
+    .section-title {
+      color: $dark-text-color-primary;
+    }
+    
+    .setting-items .setting-item {
+      border-color: $dark-border-color;
+      
+      .setting-name {
+        color: $dark-text-color-primary;
+      }
+      
+      .setting-desc {
+        color: $dark-text-color-secondary;
+      }
+    }
+    
+    .about-info .about-item {
+      border-color: $dark-border-color;
+      
+      .about-label {
+        color: $dark-text-color-secondary;
+      }
+      
+      .about-value {
+        color: $dark-text-color-primary;
+      }
+    }
+    
+    .select-input {
+      background: $dark-background-secondary;
+      border-color: $dark-border-color;
+      color: $dark-text-color-primary;
+      
+      &:hover {
+        border-color: lighten($dark-border-color, 10%);
+      }
+    }
+    
+    .switch .slider {
+      background-color: $dark-border-color;
+      
+      &:before {
+        background-color: $dark-text-color-primary;
+      }
+    }
+  }
+} 
