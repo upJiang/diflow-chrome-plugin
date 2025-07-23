@@ -1,27 +1,53 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
+
+// 自定义插件：移动HTML到根目录并修复路径
+const moveHtmlPlugin = () => {
+  return {
+    name: 'move-html',
+    writeBundle() {
+      try {
+        // 从 public/index.html 移动到根目录的 index.html
+        const source = resolve(__dirname, '../dist/popup/public/index.html')
+        const target = resolve(__dirname, '../dist/popup/index.html')
+        
+        // 读取文件内容
+        let htmlContent = readFileSync(source, 'utf-8')
+        
+        // 修复资源路径：../js/ -> js/, ../css/ -> css/
+        htmlContent = htmlContent.replace(/\.\.\/js\//g, 'js/')
+        htmlContent = htmlContent.replace(/\.\.\/css\//g, 'css/')
+        
+        // 写入到目标位置
+        writeFileSync(target, htmlContent)
+        console.log('✅ HTML文件已移动到正确位置并修复了路径')
+      } catch (error) {
+        console.warn('⚠️ 移动HTML文件失败:', error.message)
+      }
+    }
+  }
+}
 
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production'
   
   return {
-    plugins: [vue()],
+    plugins: [vue(), moveHtmlPlugin()],
     base: './', // 确保资源使用相对路径
     build: {
       outDir: '../dist/popup',
-      assetsDir: 'assets',
+      emptyOutDir: true,
       rollupOptions: {
-        input: {
-          popup: resolve(__dirname, 'public/index.html')
-        },
+        input: resolve(__dirname, 'public/index.html'),
         output: {
-          // 确保文件名不包含hash，方便Chrome插件引用
-          entryFileNames: isProduction ? 'js/[name].js' : 'js/[name].[hash].js',
-          chunkFileNames: isProduction ? 'js/[name].js' : 'js/[name].[hash].js',
+          // Chrome插件不支持hash文件名，统一不使用hash
+          entryFileNames: 'js/[name].js',
+          chunkFileNames: 'js/[name].js',
           assetFileNames: (assetInfo) => {
             if (assetInfo.name.endsWith('.css')) {
-              return isProduction ? 'css/[name].css' : 'css/[name].[hash].css'
+              return 'css/[name].css'
             }
             return 'assets/[name].[ext]'
           }

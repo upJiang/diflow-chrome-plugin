@@ -4,10 +4,15 @@ import { debounce } from 'lodash-es'
 import fs from 'fs-extra'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import net from 'net'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const rootDir = path.resolve(__dirname, '..')
 const distDir = path.resolve(rootDir, 'dist')
+
+// 开发服务器配置
+const DEV_PORT = 3000
+const HMR_PORT = 3001
 
 // 开发模式构建函数
 const devBuild = debounce(async () => {
@@ -111,13 +116,52 @@ async function copyIcons() {
   }
 }
 
+// 启动popup开发服务器
+function startPopupDevServer() {
+  console.log('🌐 启动Popup开发服务器...')
+  
+  const popupDir = path.resolve(rootDir, 'popup')
+  
+  const popupDevServer = spawn('yarn', ['dev'], {
+    cwd: popupDir,
+    stdio: ['inherit', 'pipe', 'pipe'],
+    shell: process.platform === 'win32'
+  })
+  
+  popupDevServer.stdout.on('data', (data) => {
+    const output = data.toString()
+    // 过滤掉一些冗余信息，只显示重要的
+    if (output.includes('Local:') || output.includes('ready in') || output.includes('localhost')) {
+      console.log(`[Popup Dev] ${output.trim()}`)
+    }
+  })
+  
+  popupDevServer.stderr.on('data', (data) => {
+    const error = data.toString()
+    if (!error.includes('Deprecation Warning')) {
+      console.error(`[Popup Dev Error] ${error.trim()}`)
+    }
+  })
+  
+  popupDevServer.on('error', (error) => {
+    console.error('❌ Popup开发服务器启动失败:', error)
+  })
+  
+  return popupDevServer
+}
+
 function startDevMode() {
   console.log('🚀 启动开发模式...')
+  console.log('=' .repeat(60))
   
-  // 初始构建
+  // 1. 启动popup开发服务器
+  const popupDevServer = startPopupDevServer()
+  
+  // 2. 初始构建插件
+  console.log('🔧 构建Chrome插件到dist目录...')
   devBuild()
   
-  // 监听文件变化
+  // 3. 监听文件变化
   const watcher = chokidar.watch([
     'popup/src/**/*',
     'background/**/*',
@@ -133,9 +177,29 @@ function startDevMode() {
     devBuild()
   })
   
-  console.log('👀 正在监听文件变化...')
-  console.log('💡 修改完文件后，请在Chrome扩展页面手动刷新插件')
-  console.log('📝 访问 chrome://extensions/ 然后点击插件的刷新按钮')
+  // 4. 显示开发说明
+  setTimeout(() => {
+    console.log('\n' + '=' .repeat(60))
+    console.log('🎉 开发环境已启动！')
+    console.log('')
+    console.log('📝 开发方式：')
+    console.log('  1. Vue组件开发: http://localhost:3000 (热重载)')
+    console.log('  2. Chrome插件测试: 加载dist目录到chrome://extensions/')
+    console.log('')
+    console.log('🔄 使用说明：')
+    console.log('  • popup组件修改会自动热重载（访问localhost:3000）')
+    console.log('  • 插件功能修改需要在Chrome扩展页面手动刷新插件')
+    console.log('  • 按Ctrl+C停止开发服务器')
+    console.log('=' .repeat(60))
+  }, 2000)
+  
+  // 5. 优雅退出处理
+  process.on('SIGINT', () => {
+    console.log('\n🛑 正在停止开发服务器...')
+    popupDevServer.kill()
+    watcher.close()
+    process.exit(0)
+  })
 }
 
 startDevMode() 
