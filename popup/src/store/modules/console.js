@@ -1,12 +1,15 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import MessageUtils from '../../utils/messageUtils.js'
+import CopyUtils from '../../utils/copyUtils.js'
 
 export const useConsoleStore = defineStore('console', () => {
   // 状态
   const consoleData = ref([])
   const loading = ref(false)
   const filterType = ref('all')
+  const currentTabId = ref(null)
+  const currentUrl = ref('')
   
   // 计算属性
   const filteredConsoleData = computed(() => {
@@ -37,9 +40,12 @@ export const useConsoleStore = defineStore('console', () => {
       if (MessageUtils.isExtensionEnvironment()) {
         const data = await MessageUtils.getCollectedData()
         consoleData.value = data.consoleData || []
+        currentTabId.value = data.tabId
+        currentUrl.value = data.url || ''
       } else {
         // 开发环境模拟数据
         consoleData.value = generateMockConsoleData()
+        currentUrl.value = window.location.href
       }
     } catch (error) {
       console.error('Failed to load console data:', error)
@@ -56,6 +62,12 @@ export const useConsoleStore = defineStore('console', () => {
     if (consoleData.value.length > 1000) {
       consoleData.value.shift()
     }
+  }
+  
+  function updateTabData(tabId, url, data) {
+    currentTabId.value = tabId
+    currentUrl.value = url
+    consoleData.value = data.consoleData || []
   }
   
   async function clearConsoleData() {
@@ -75,23 +87,23 @@ export const useConsoleStore = defineStore('console', () => {
       return { success: false, message: '没有错误信息可复制' }
     }
     
-    const formattedData = MessageUtils.formatConsoleDataForCopy(errorLogs)
+    const markdownText = CopyUtils.formatConsoleErrorToMarkdown(errorLogs)
+    const result = await CopyUtils.copyToClipboard(markdownText)
     
-    try {
-      if (MessageUtils.isExtensionEnvironment()) {
-        const result = await MessageUtils.copyToClipboard(formattedData)
-        return result.success 
-          ? { success: true, message: `已复制 ${errorLogs.length} 条错误信息` }
-          : { success: false, message: '复制失败' }
-      } else {
-        // 开发环境使用浏览器API
-        await navigator.clipboard.writeText(formattedData)
-        return { success: true, message: `已复制 ${errorLogs.length} 条错误信息` }
-      }
-    } catch (error) {
-      console.error('Failed to copy errors:', error)
-      return { success: false, message: '复制失败: ' + error.message }
+    if (result.success) {
+      return { success: true, message: `已复制 ${errorLogs.length} 条错误信息` }
+    } else {
+      return result
     }
+  }
+
+  async function copyConsoleError(error) {
+    if (!error) {
+      return { success: false, message: '错误信息不存在' }
+    }
+    
+    const markdownText = CopyUtils.formatConsoleErrorToMarkdown(error)
+    return await CopyUtils.copyToClipboard(markdownText)
   }
   
   function setFilter(type) {
@@ -145,6 +157,8 @@ export const useConsoleStore = defineStore('console', () => {
     consoleData,
     loading,
     filterType,
+    currentTabId,
+    currentUrl,
     
     // 计算属性
     filteredConsoleData,
@@ -156,8 +170,10 @@ export const useConsoleStore = defineStore('console', () => {
     // 方法
     loadConsoleData,
     addConsoleLog,
+    updateTabData,
     clearConsoleData,
     copyAllErrors,
+    copyConsoleError,
     setFilter,
     getLogsByLevel
   }

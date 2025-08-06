@@ -64,7 +64,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useConsoleStore, useAppStore } from '@/store'
 import LogItem from './components/LogItem/index.vue'
 
@@ -104,6 +104,40 @@ const filters = computed(() => [
     count: consoleStore.getLogsByLevel('debug').length
   }
 ])
+
+// 数据更新事件监听器
+let dataUpdateListener = null
+let tabChangeListener = null
+
+onMounted(async () => {
+  // 加载初始数据
+  await consoleStore.loadConsoleData()
+  
+  // 监听实时数据更新
+  dataUpdateListener = (event) => {
+    if (event.detail.type === 'CONSOLE_DATA_UPDATED') {
+      console.log('Console data updated:', event.detail.data)
+    }
+  }
+  
+  // 监听Tab切换
+  tabChangeListener = (event) => {
+    console.log('Tab changed:', event.detail)
+    consoleStore.loadConsoleData()
+  }
+  
+  window.addEventListener('diflow-data-updated', dataUpdateListener)
+  window.addEventListener('diflow-tab-changed', tabChangeListener)
+})
+
+onUnmounted(() => {
+  if (dataUpdateListener) {
+    window.removeEventListener('diflow-data-updated', dataUpdateListener)
+  }
+  if (tabChangeListener) {
+    window.removeEventListener('diflow-tab-changed', tabChangeListener)
+  }
+})
 
 function getFilterLabel(type) {
   const filter = filters.value.find(f => f.key === type)

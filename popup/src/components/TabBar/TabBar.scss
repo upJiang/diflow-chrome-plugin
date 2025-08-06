@@ -1,10 +1,23 @@
 .tab-bar {
   display: flex;
   align-items: center;
-  height: 56px;
-  background: $background-primary;
-  border-top: 1px solid $border-color;
-  padding: 0 $spacing-xs;
+  height: 72px;
+  background: linear-gradient(135deg, #ffffff, #f8fafc);
+  border-top: none;
+  padding: $spacing-sm;
+  box-shadow: 0 -4px 20px rgba(99, 102, 241, 0.1);
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: $spacing-lg;
+    right: $spacing-lg;
+    height: 2px;
+    background: linear-gradient(90deg, $color-primary, $color-primary-light, $color-info);
+    border-radius: 1px;
+  }
   
   .tab-item {
     position: relative;
@@ -13,48 +26,75 @@
     align-items: center;
     justify-content: center;
     flex: 1;
-    padding: $spacing-xs;
+    padding: $spacing-sm;
     text-decoration: none;
     color: $text-color-secondary;
-    transition: color $transition-fast;
-    border-radius: $border-radius;
-    min-height: 44px;
+    transition: all $transition-fast;
+    border-radius: $border-radius-large;
+    min-height: 52px;
+    margin: 0 $spacing-xs;
     
     &:hover {
       color: $text-color-primary;
-      background: $background-secondary;
+      background: rgba($color-primary, 0.1);
+      transform: translateY(-2px);
+      box-shadow: $shadow-light;
     }
     
     &.active {
       color: $color-primary;
+      background: linear-gradient(135deg, rgba($color-primary, 0.1), rgba($color-primary-light, 0.15));
+      box-shadow: $shadow-medium;
+      transform: translateY(-1px);
+      
+      .tab-icon {
+        transform: scale(1.1);
+        filter: drop-shadow(0 2px 4px rgba($color-primary, 0.3));
+      }
     }
     
     .tab-icon {
-      margin-bottom: 2px;
+      margin-bottom: 4px;
+      transition: all $transition-fast;
     }
     
     .tab-label {
-      font-size: 10px;
+      font-size: 11px;
       line-height: 1;
-      font-weight: $font-weight-medium;
+      font-weight: $font-weight-bold;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
     
     .tab-badge {
       position: absolute;
-      top: 2px;
-      right: 8px;
-      background: $color-error;
+      top: 4px;
+      right: 12px;
+      background: linear-gradient(135deg, $color-error, #ff6b6b);
       color: white;
       font-size: 9px;
       font-weight: $font-weight-bold;
-      padding: 1px 4px;
-      border-radius: 8px;
-      min-width: 16px;
-      height: 16px;
+      padding: 2px 6px;
+      border-radius: $border-radius-pill;
+      min-width: 18px;
+      height: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
       line-height: 1;
+      box-shadow: 0 2px 6px rgba($color-error, 0.4);
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+      100% {
+        transform: scale(1);
+      }
     }
   }
 }

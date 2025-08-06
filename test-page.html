@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diflow Chrome Plugin 测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .success { color: #28a745; }
+        .info { color: #17a2b8; }
+        #output {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Diflow Chrome Plugin 测试页面</h1>
+        <p>这个页面用于测试Chrome插件的Console和Network监控功能。</p>
+        
+        <div class="section">
+            <h2>Console 测试</h2>
+            <p>点击下面的按钮来测试不同类型的console输出：</p>
+            <button onclick="testConsoleLog()">测试 console.log</button>
+            <button onclick="testConsoleWarn()">测试 console.warn</button>
+            <button onclick="testConsoleError()">测试 console.error</button>
+            <button onclick="testConsoleInfo()">测试 console.info</button>
+            <button onclick="testConsoleDebug()">测试 console.debug</button>
+            <button onclick="testConsoleObject()">测试 console.log(对象)</button>
+        </div>
+        
+        <div class="section">
+            <h2>Network 测试</h2>
+            <p>点击下面的按钮来测试网络请求监控：</p>
+            <button onclick="testFetchSuccess()">测试 Fetch 成功请求</button>
+            <button onclick="testFetchError()">测试 Fetch 错误请求</button>
+            <button onclick="testXHRSuccess()">测试 XHR 成功请求</button>
+            <button onclick="testXHRError()">测试 XHR 错误请求</button>
+            <button onclick="testMultipleRequests()">测试多个请求</button>
+        </div>
+        
+        <div class="section">
+            <h2>实时输出</h2>
+            <div id="output"></div>
+        </div>
+    </div>
+
+    <script>
+        // 输出函数
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'warning' ? 'warning' : type === 'success' ? 'success' : 'info';
+            output.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // Console 测试函数
+        function testConsoleLog() {
+            console.log('这是一条普通的日志信息');
+            log('已执行 console.log 测试', 'success');
+        }
+
+        function testConsoleWarn() {
+            console.warn('这是一条警告信息');
+            log('已执行 console.warn 测试', 'warning');
+        }
+
+        function testConsoleError() {
+            console.error('这是一条错误信息');
+            log('已执行 console.error 测试', 'error');
+        }
+
+        function testConsoleInfo() {
+            console.info('这是一条信息');
+            log('已执行 console.info 测试', 'info');
+        }
+
+        function testConsoleDebug() {
+            console.debug('这是一条调试信息');
+            log('已执行 console.debug 测试', 'info');
+        }
+
+        function testConsoleObject() {
+            const testObject = {
+                name: '测试对象',
+                value: 123,
+                nested: {
+                    key: 'value',
+                    array: [1, 2, 3]
+                }
+            };
+            console.log('测试对象输出:', testObject);
+            log('已执行 console.log(对象) 测试', 'success');
+        }
+
+        // Network 测试函数
+        async function testFetchSuccess() {
+            try {
+                log('开始测试 Fetch 成功请求...', 'info');
+                const response = await fetch('https://jsonplaceholder.typicode.com/posts/1');
+                const data = await response.json();
+                console.log('Fetch 成功响应:', data);
+                log('Fetch 成功请求完成', 'success');
+            } catch (error) {
+                log('Fetch 请求失败: ' + error.message, 'error');
+            }
+        }
+
+        async function testFetchError() {
+            try {
+                log('开始测试 Fetch 错误请求...', 'info');
+                const response = await fetch('https://httpstat.us/404');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                log('Fetch 错误请求完成: ' + error.message, 'error');
+            }
+        }
+
+        function testXHRSuccess() {
+            log('开始测试 XHR 成功请求...', 'info');
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'https://jsonplaceholder.typicode.com/users/1');
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    console.log('XHR 成功响应:', data);
+                    log('XHR 成功请求完成', 'success');
+                }
+            };
+            xhr.onerror = function() {
+                log('XHR 请求失败', 'error');
+            };
+            xhr.send();
+        }
+
+        function testXHRError() {
+            log('开始测试 XHR 错误请求...', 'info');
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'https://httpstat.us/500');
+            xhr.onload = function() {
+                if (xhr.status >= 400) {
+                    console.error('XHR 错误响应:', xhr.status, xhr.statusText);
+                    log('XHR 错误请求完成', 'error');
+                }
+            };
+            xhr.onerror = function() {
+                log('XHR 网络错误', 'error');
+            };
+            xhr.send();
+        }
+
+        async function testMultipleRequests() {
+            log('开始测试多个并发请求...', 'info');
+            
+            // 并发发送多个请求
+            const promises = [
+                fetch('https://jsonplaceholder.typicode.com/posts/1'),
+                fetch('https://jsonplaceholder.typicode.com/posts/2'),
+                fetch('https://jsonplaceholder.typicode.com/posts/3'),
+                fetch('https://httpstat.us/404'), // 这个会失败
+                fetch('https://httpstat.us/500')  // 这个会失败
+            ];
+            
+            try {
+                const responses = await Promise.allSettled(promises);
+                responses.forEach((result, index) => {
+                    if (result.status === 'fulfilled') {
+                        log(`请求 ${index + 1} 成功`, 'success');
+                    } else {
+                        log(`请求 ${index + 1} 失败: ${result.reason}`, 'error');
+                    }
+                });
+            } catch (error) {
+                log('并发请求测试失败: ' + error.message, 'error');
+            }
+        }
+
+        // 页面加载完成后的初始化
+        window.addEventListener('load', function() {
+            log('页面加载完成，开始测试...', 'success');
+            console.log('Diflow Chrome Plugin 测试页面已加载');
+            console.info('请打开Chrome插件查看监控效果');
+            
+            // 自动生成一些错误用于测试
+            setTimeout(() => {
+                console.error('自动测试错误 1: 这是一个测试错误');
+                console.warn('自动测试警告: 这是一个测试警告');
+                console.error('自动测试错误 2: 另一个测试错误');
+                
+                // 自动触发一个网络错误
+                fetch('https://httpstat.us/500')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network error test');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('网络请求错误:', error);
+                    });
+            }, 2000);
+        });
+
+        // 定期输出一些测试信息
+        setInterval(() => {
+            console.log('定时测试日志:', new Date().toLocaleString());
+        }, 10000);
+    </script>
+</body>
+</html> 

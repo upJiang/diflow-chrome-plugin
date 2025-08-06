@@ -14,6 +14,37 @@ const distDir = path.resolve(rootDir, 'dist')
 const DEV_PORT = 3000
 const HMR_PORT = 3001
 
+// 检查端口是否被占用
+function isPortInUse(port) {
+  return new Promise((resolve) => {
+    const server = net.createServer()
+    server.listen(port, () => {
+      server.once('close', () => {
+        resolve(false)
+      })
+      server.close()
+    })
+    server.on('error', () => {
+      resolve(true)
+    })
+  })
+}
+
+// 杀死占用端口的进程
+async function killProcessOnPort(port) {
+  try {
+    if (process.platform === 'win32') {
+      execSync(`netstat -ano | findstr :${port}`, { stdio: 'pipe' })
+      execSync(`for /f "tokens=5" %a in ('netstat -ano ^| findstr :${port}') do taskkill /f /pid %a`, { stdio: 'pipe' })
+    } else {
+      execSync(`lsof -ti:${port} | xargs kill -9`, { stdio: 'pipe' })
+    }
+    console.log(`✅ 已清理端口 ${port} 的占用进程`)
+  } catch (error) {
+    console.log(`⚠️ 端口 ${port} 清理失败:`, error.message)
+  }
+}
+
 // 开发模式构建函数
 const devBuild = debounce(async () => {
   console.log('🔄 开发模式重新构建...')
@@ -117,7 +148,23 @@ async function copyIcons() {
 }
 
 // 启动popup开发服务器
-function startPopupDevServer() {
+async function startPopupDevServer() {
+  console.log('🌐 检查端口占用情况...')
+  
+  // 检查端口是否被占用
+  const devPortInUse = await isPortInUse(DEV_PORT)
+  const hmrPortInUse = await isPortInUse(HMR_PORT)
+  
+  if (devPortInUse) {
+    console.log(`⚠️ 端口 ${DEV_PORT} 被占用，正在清理...`)
+    await killProcessOnPort(DEV_PORT)
+  }
+  
+  if (hmrPortInUse) {
+    console.log(`⚠️ 端口 ${HMR_PORT} 被占用，正在清理...`)
+    await killProcessOnPort(HMR_PORT)
+  }
+  
   console.log('🌐 启动Popup开发服务器...')
   
   const popupDir = path.resolve(rootDir, 'popup')
@@ -150,12 +197,12 @@ function startPopupDevServer() {
   return popupDevServer
 }
 
-function startDevMode() {
+async function startDevMode() {
   console.log('🚀 启动开发模式...')
   console.log('=' .repeat(60))
   
   // 1. 启动popup开发服务器
-  const popupDevServer = startPopupDevServer()
+  const popupDevServer = await startPopupDevServer()
   
   // 2. 初始构建插件
   console.log('🔧 构建Chrome插件到dist目录...')

@@ -26,13 +26,14 @@
     const consoleTypes = ['log', 'warn', 'error', 'info', 'debug']
     
     consoleTypes.forEach(type => {
+      const originalMethod = originalConsole[type]
       console[type] = function(...args) {
         // 调用原始方法
-        originalConsole[type].apply(console, args)
+        originalMethod.apply(console, args)
         
         // 发送消息到background
         try {
-          chrome.runtime.sendMessage({
+          const messageData = {
             type: 'CONSOLE_LOG',
             data: {
               level: type,
@@ -50,12 +51,24 @@
               lineNumber: getStackTraceLineNumber(),
               timestamp: Date.now()
             }
+          }
+          
+          chrome.runtime.sendMessage(messageData).catch(error => {
+            // 静默处理错误，避免影响原页面
+            console.warn('Failed to send console data:', error)
           })
         } catch (error) {
           // 静默处理错误，避免影响原页面
         }
       }
     })
+    
+    // 测试console监控是否工作
+    setTimeout(() => {
+      console.log('Diflow: Console monitoring test - this should be captured')
+      console.warn('Diflow: Console warning test')
+      console.error('Diflow: Console error test')
+    }, 1000)
   }
   
   // 监听网络请求
@@ -101,7 +114,7 @@
         const endTime = Date.now()
         
         try {
-          chrome.runtime.sendMessage({
+          const messageData = {
             type: 'NETWORK_REQUEST',
             data: {
               url: requestData.url,
@@ -115,6 +128,10 @@
               responseTime: endTime - startTime,
               timestamp: startTime
             }
+          }
+          
+          chrome.runtime.sendMessage(messageData).catch(error => {
+            console.warn('Failed to send XHR data:', error)
           })
         } catch (error) {
           // 静默处理错误
@@ -141,7 +158,7 @@
           // 尝试读取响应内容
           clonedResponse.text().then(responseText => {
             try {
-              chrome.runtime.sendMessage({
+              const messageData = {
                 type: 'NETWORK_REQUEST',
                 data: {
                   url: url,
@@ -155,6 +172,10 @@
                   responseTime: endTime - startTime,
                   timestamp: startTime
                 }
+              }
+              
+              chrome.runtime.sendMessage(messageData).catch(error => {
+                console.warn('Failed to send fetch data:', error)
               })
             } catch (error) {
               // 静默处理错误
@@ -162,7 +183,7 @@
           }).catch(() => {
             // 如果无法读取响应内容，发送不包含内容的数据
             try {
-              chrome.runtime.sendMessage({
+              const messageData = {
                 type: 'NETWORK_REQUEST',
                 data: {
                   url: url,
@@ -176,6 +197,10 @@
                   responseTime: endTime - startTime,
                   timestamp: startTime
                 }
+              }
+              
+              chrome.runtime.sendMessage(messageData).catch(error => {
+                console.warn('Failed to send fetch data:', error)
               })
             } catch (error) {
               // 静默处理错误
@@ -188,7 +213,7 @@
           const endTime = Date.now()
           
           try {
-            chrome.runtime.sendMessage({
+            const messageData = {
               type: 'NETWORK_REQUEST',
               data: {
                 url: url,
@@ -202,6 +227,10 @@
                 responseTime: endTime - startTime,
                 timestamp: startTime
               }
+            }
+            
+            chrome.runtime.sendMessage(messageData).catch(err => {
+              console.warn('Failed to send fetch error data:', err)
             })
           } catch (err) {
             // 静默处理错误
@@ -210,6 +239,14 @@
           throw error
         })
     }
+    
+    // 测试网络监控是否工作
+    setTimeout(() => {
+      // 发送一个测试请求
+      fetch('/api/test', { method: 'GET' }).catch(() => {
+        // 忽略错误，这只是测试
+      })
+    }, 2000)
   }
   
   // 解析响应头
@@ -253,8 +290,14 @@
   
   // 监听来自background的消息
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log('Content script received message:', message)
+    
     if (message.type === 'PING') {
       sendResponse({ status: 'alive' })
+    } else if (message.type === 'TAB_UPDATED') {
+      console.log('Tab updated, reinitializing monitoring...')
+      // 重新初始化监控
+      initialize()
     }
   })
   
@@ -263,7 +306,18 @@
     try {
       setupConsoleMonitoring()
       setupNetworkMonitoring()
-      console.log('Diflow monitoring initialized')
+      console.log('Diflow monitoring initialized for:', window.location.href)
+      
+      // 发送初始化完成消息
+      chrome.runtime.sendMessage({
+        type: 'CONTENT_SCRIPT_READY',
+        data: {
+          url: window.location.href,
+          timestamp: Date.now()
+        }
+      }).catch(error => {
+        console.warn('Failed to send ready message:', error)
+      })
     } catch (error) {
       console.error('Failed to initialize Diflow monitoring:', error)
     }
@@ -275,5 +329,20 @@
   } else {
     initialize()
   }
+  
+  // 监听页面URL变化（SPA应用）
+  let currentUrl = window.location.href
+  const observer = new MutationObserver(() => {
+    if (window.location.href !== currentUrl) {
+      currentUrl = window.location.href
+      console.log('URL changed, reinitializing monitoring:', currentUrl)
+      initialize()
+    }
+  })
+  
+  observer.observe(document, {
+    subtree: true,
+    childList: true
+  })
   
 })(); 

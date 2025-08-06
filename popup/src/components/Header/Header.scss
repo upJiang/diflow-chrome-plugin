@@ -2,10 +2,22 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 48px;
-  padding: 0 $spacing-md;
-  background: $background-primary;
-  border-bottom: 1px solid $border-color;
+  height: 60px;
+  padding: 0 $spacing-xl;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-bottom: none;
+  box-shadow: $shadow-colorful;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    right: 0;
+    height: 10px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.1), transparent);
+  }
   
   .header-left {
     display: flex;
@@ -23,39 +35,51 @@
     align-items: center;
     gap: $spacing-sm;
     cursor: pointer;
-    padding: $spacing-xs;
-    border-radius: $border-radius;
-    transition: background-color $transition-fast;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $border-radius-pill;
+    transition: all $transition-fast;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
     
     &:hover {
-      background: $background-secondary;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
     
     .logo-icon {
-      color: $color-primary;
+      color: #ffffff;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
     }
     
     .logo-text {
       font-weight: $font-weight-bold;
       font-size: $font-size-large;
-      color: $text-color-primary;
+      color: #ffffff;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     }
   }
   
   .theme-toggle,
   .website-btn {
     @include button-text;
-    padding: $spacing-xs;
-    border-radius: $border-radius;
-    color: $text-color-secondary;
+    padding: $spacing-sm;
+    border-radius: $border-radius-round;
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all $transition-fast;
     
     &:hover {
-      color: $text-color-primary;
-      background: $background-secondary;
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
     
     svg {
       display: block;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
     }
   }
 }

@@ -1,13 +1,14 @@
 // Background Service Worker for Diflow Chrome Plugin
 
+// 存储每个Tab的数据
+const tabData = new Map()
+
 // 插件安装时的初始化
 chrome.runtime.onInstalled.addListener((details) => {
   console.log('Diflow Chrome Plugin installed:', details)
   
   // 设置初始存储数据
   chrome.storage.local.set({
-    consoleData: [],
-    networkData: [],
     settings: {
       enableConsoleMonitor: true,
       enableNetworkMonitor: true,
@@ -16,25 +17,87 @@ chrome.runtime.onInstalled.addListener((details) => {
   })
 })
 
+// 监听标签页更新
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete' && tab.url) {
+    console.log('Tab updated:', tabId, tab.url)
+    
+    // 初始化Tab数据
+    if (!tabData.has(tabId)) {
+      tabData.set(tabId, {
+        consoleData: [],
+        networkData: [],
+        url: tab.url,
+        lastUpdated: Date.now()
+      })
+    } else {
+      // 更新Tab信息
+      const data = tabData.get(tabId)
+      const oldUrl = data.url
+      data.url = tab.url
+      data.lastUpdated = Date.now()
+      
+      // 如果URL变化，清空旧数据
+      if (oldUrl !== tab.url) {
+        console.log(`URL changed for tab ${tabId}: ${oldUrl} -> ${tab.url}, clearing data`)
+        data.consoleData = []
+        data.networkData = []
+      }
+    }
+    
+    // 通知content script重新初始化
+    chrome.tabs.sendMessage(tabId, {
+      type: 'TAB_UPDATED',
+      data: { url: tab.url }
+    }).catch(() => {
+      // Content script可能还没有加载，忽略错误
+    })
+  }
+})
+
+// 监听标签页激活
+chrome.tabs.onActivated.addListener((activeInfo) => {
+  console.log('Tab activated:', activeInfo.tabId)
+  
+  // 通知popup当前激活的Tab
+  broadcastToPopup('TAB_ACTIVATED', {
+    tabId: activeInfo.tabId,
+    data: tabData.get(activeInfo.tabId) || { consoleData: [], networkData: [] }
+  })
+})
+
+// 监听标签页关闭
+chrome.tabs.onRemoved.addListener((tabId) => {
+  console.log('Tab removed:', tabId)
+  
+  // 清理Tab数据
+  tabData.delete(tabId)
+})
+
 // 监听来自content script和popup的消息
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log('Background received message:', message)
+  console.log('Background received message:', message, 'from tab:', sender.tab?.id)
+  
+  const tabId = sender.tab?.id
   
   switch (message.type) {
     case 'CONSOLE_LOG':
-      handleConsoleMessage(message.data)
+      handleConsoleMessage(message.data, tabId)
       break
     case 'NETWORK_REQUEST':
-      handleNetworkMessage(message.data)
+      handleNetworkMessage(message.data, tabId)
       break
     case 'GET_COLLECTED_DATA':
-      getCollectedData().then(sendResponse)
+      getCollectedData(message.tabId || tabId).then(sendResponse)
       return true // 表示异步响应
     case 'CLEAR_DATA':
-      clearData(message.dataType).then(sendResponse)
+      clearData(message.dataType, tabId).then(sendResponse)
       return true
     case 'COPY_TO_CLIPBOARD':
       copyToClipboard(message.text).then(sendResponse)
+      return true
+    case 'GET_CURRENT_TAB_DATA':
+      getCurrentTabData().then(sendResponse)
       return true
     default:
       console.log('Unknown message type:', message.type)
@@ -42,10 +105,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 })
 
 // 处理console信息
-async function handleConsoleMessage(consoleData) {
+async function handleConsoleMessage(consoleData, tabId) {
   try {
-    const result = await chrome.storage.local.get(['consoleData'])
-    const existingData = result.consoleData || []
+    if (!tabId) {
+      console.warn('No tabId provided for console message')
+      return
+    }
+    
+    // 获取或创建Tab数据
+    if (!tabData.has(tabId)) {
+      tabData.set(tabId, {
+        consoleData: [],
+        networkData: [],
+        url: consoleData.url,
+        lastUpdated: Date.now()
+      })
+    }
+    
+    const tabInfo = tabData.get(tabId)
     
     const newData = {
       id: generateId(),
@@ -56,27 +133,46 @@ async function handleConsoleMessage(consoleData) {
       lineNumber: consoleData.lineNumber
     }
     
-    existingData.push(newData)
+    tabInfo.consoleData.push(newData)
+    tabInfo.lastUpdated = Date.now()
     
     // 限制数据量，只保留最新的1000条
-    if (existingData.length > 1000) {
-      existingData.splice(0, existingData.length - 1000)
+    if (tabInfo.consoleData.length > 1000) {
+      tabInfo.consoleData.splice(0, tabInfo.consoleData.length - 1000)
     }
     
-    await chrome.storage.local.set({ consoleData: existingData })
-    
     // 通知popup更新
-    broadcastToPopup('CONSOLE_DATA_UPDATED', newData)
+    broadcastToPopup('CONSOLE_DATA_UPDATED', {
+      tabId: tabId,
+      data: newData,
+      totalCount: tabInfo.consoleData.length
+    })
+    
+    console.log(`Console data added for tab ${tabId}:`, newData.level)
   } catch (error) {
     console.error('Error handling console message:', error)
   }
 }
 
 // 处理网络请求信息
-async function handleNetworkMessage(networkData) {
+async function handleNetworkMessage(networkData, tabId) {
   try {
-    const result = await chrome.storage.local.get(['networkData'])
-    const existingData = result.networkData || []
+    if (!tabId) {
+      console.warn('No tabId provided for network message')
+      return
+    }
+    
+    // 获取或创建Tab数据
+    if (!tabData.has(tabId)) {
+      tabData.set(tabId, {
+        consoleData: [],
+        networkData: [],
+        url: networkData.url,
+        lastUpdated: Date.now()
+      })
+    }
+    
+    const tabInfo = tabData.get(tabId)
     
     const newData = {
       id: generateId(),
@@ -93,48 +189,102 @@ async function handleNetworkMessage(networkData) {
       isError: networkData.status >= 400
     }
     
-    existingData.push(newData)
+    tabInfo.networkData.push(newData)
+    tabInfo.lastUpdated = Date.now()
     
     // 限制数据量，只保留最新的500条
-    if (existingData.length > 500) {
-      existingData.splice(0, existingData.length - 500)
+    if (tabInfo.networkData.length > 500) {
+      tabInfo.networkData.splice(0, tabInfo.networkData.length - 500)
     }
     
-    await chrome.storage.local.set({ networkData: existingData })
-    
     // 通知popup更新
-    broadcastToPopup('NETWORK_DATA_UPDATED', newData)
+    broadcastToPopup('NETWORK_DATA_UPDATED', {
+      tabId: tabId,
+      data: newData,
+      totalCount: tabInfo.networkData.length
+    })
+    
+    console.log(`Network data added for tab ${tabId}:`, newData.method, newData.url, newData.status)
   } catch (error) {
     console.error('Error handling network message:', error)
   }
 }
 
 // 获取收集的数据
-async function getCollectedData() {
+async function getCollectedData(tabId) {
   try {
-    const result = await chrome.storage.local.get(['consoleData', 'networkData'])
+    if (!tabId) {
+      // 如果没有指定tabId，获取当前激活的Tab
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
+      if (tabs.length > 0) {
+        tabId = tabs[0].id
+      }
+    }
+    
+    const tabInfo = tabData.get(tabId) || {
+      consoleData: [],
+      networkData: [],
+      url: '',
+      lastUpdated: Date.now()
+    }
+    
     return {
-      consoleData: result.consoleData || [],
-      networkData: result.networkData || []
+      tabId: tabId,
+      consoleData: tabInfo.consoleData || [],
+      networkData: tabInfo.networkData || [],
+      url: tabInfo.url,
+      lastUpdated: tabInfo.lastUpdated
     }
   } catch (error) {
     console.error('Error getting collected data:', error)
-    return { consoleData: [], networkData: [] }
+    return { consoleData: [], networkData: [], tabId: null }
+  }
+}
+
+// 获取当前Tab数据
+async function getCurrentTabData() {
+  try {
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
+    if (tabs.length === 0) {
+      return { consoleData: [], networkData: [], tabId: null }
+    }
+    
+    const tabId = tabs[0].id
+    return await getCollectedData(tabId)
+  } catch (error) {
+    console.error('Error getting current tab data:', error)
+    return { consoleData: [], networkData: [], tabId: null }
   }
 }
 
 // 清理数据
-async function clearData(dataType) {
+async function clearData(dataType, tabId) {
   try {
-    if (dataType === 'console') {
-      await chrome.storage.local.set({ consoleData: [] })
-    } else if (dataType === 'network') {
-      await chrome.storage.local.set({ networkData: [] })
-    } else if (dataType === 'all') {
-      await chrome.storage.local.set({ consoleData: [], networkData: [] })
+    if (!tabId) {
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
+      if (tabs.length > 0) {
+        tabId = tabs[0].id
+      }
     }
     
-    broadcastToPopup('DATA_CLEARED', dataType)
+    if (!tabId || !tabData.has(tabId)) {
+      return { success: false, error: 'No active tab found' }
+    }
+    
+    const tabInfo = tabData.get(tabId)
+    
+    if (dataType === 'console') {
+      tabInfo.consoleData = []
+    } else if (dataType === 'network') {
+      tabInfo.networkData = []
+    } else if (dataType === 'all') {
+      tabInfo.consoleData = []
+      tabInfo.networkData = []
+    }
+    
+    tabInfo.lastUpdated = Date.now()
+    
+    broadcastToPopup('DATA_CLEARED', { dataType, tabId })
     return { success: true }
   } catch (error) {
     console.error('Error clearing data:', error)
@@ -145,30 +295,12 @@ async function clearData(dataType) {
 // 复制到剪贴板
 async function copyToClipboard(text) {
   try {
-    // 使用offscreen document来处理剪贴板操作
-    await createOffscreenDocument()
-    
-    const response = await chrome.runtime.sendMessage({
-      type: 'COPY_TO_CLIPBOARD',
-      text: text
-    })
-    
-    return response
+    // 直接返回文本，让popup处理复制
+    return { success: true, text: text }
   } catch (error) {
     console.error('Error copying to clipboard:', error)
     return { success: false, error: error.message }
   }
-}
-
-// 创建离屏文档用于剪贴板操作
-async function createOffscreenDocument() {
-  if (await chrome.offscreen.hasDocument()) return
-  
-  await chrome.offscreen.createDocument({
-    url: 'offscreen.html',
-    reasons: ['CLIPBOARD'],
-    justification: 'Copy error information to clipboard'
-  })
 }
 
 // 广播消息到popup
@@ -185,13 +317,6 @@ function broadcastToPopup(type, data) {
 function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).substr(2)
 }
-
-// 监听标签页更新
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete' && tab.url) {
-    console.log('Tab updated:', tab.url)
-  }
-})
 
 // 处理插件图标点击
 chrome.action.onClicked.addListener((tab) => {

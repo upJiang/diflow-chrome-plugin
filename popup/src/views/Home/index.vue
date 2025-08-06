@@ -67,6 +67,7 @@
           v-for="error in recentErrors" 
           :key="error.id"
           class="error-item"
+          @click="copyError(error)"
         >
           <div class="error-type">
             {{ error.type === 'console' ? 'Console' : 'Network' }}
@@ -74,6 +75,11 @@
           <div class="error-content">
             <div class="error-message">{{ error.message }}</div>
             <div class="error-time">{{ formatTime(error.timestamp) }}</div>
+          </div>
+          <div class="error-actions">
+            <svg viewBox="0 0 24 24" width="16" height="16">
+              <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" fill="currentColor"/>
+            </svg>
           </div>
         </div>
       </div>
@@ -115,9 +121,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore, useConsoleStore, useNetworkStore } from '@/store'
+import CopyUtils from '@/utils/copyUtils.js'
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -162,6 +169,14 @@ function formatTime(timestamp) {
   }
 }
 
+onMounted(async () => {
+  // 加载数据以显示统计信息
+  await Promise.all([
+    consoleStore.loadConsoleData(),
+    networkStore.loadNetworkData()
+  ])
+})
+
 function openDiflowWebsite() {
   appStore.openDiflowWebsite()
 }
@@ -170,13 +185,26 @@ async function copyAllErrors() {
   try {
     appStore.setLoading(true)
     
-    const consoleResult = await consoleStore.copyAllErrors()
-    const networkResult = await networkStore.copyAllErrors()
+    const consoleErrors = consoleStore.getLogsByLevel('error')
+    const networkErrors = networkStore.errorRequests
     
-    if (consoleResult.success || networkResult.success) {
-      appStore.showNotification('错误信息已复制到剪贴板', 'success')
-    } else {
+    if (consoleErrors.length === 0 && networkErrors.length === 0) {
       appStore.showNotification('没有错误信息可复制', 'info')
+      return
+    }
+    
+    const markdownText = CopyUtils.formatMixedErrorsToMarkdown({
+      consoleErrors,
+      networkErrors
+    })
+    
+    const result = await CopyUtils.copyToClipboard(markdownText)
+    
+    if (result.success) {
+      const total = consoleErrors.length + networkErrors.length
+      appStore.showNotification(`已复制 ${total} 条错误信息`, 'success')
+    } else {
+      appStore.showNotification(result.message, 'error')
     }
   } catch (error) {
     appStore.showNotification('复制失败', 'error')
@@ -199,6 +227,33 @@ async function clearAllData() {
     appStore.showNotification('清除数据失败', 'error')
   } finally {
     appStore.setLoading(false)
+  }
+}
+
+async function copyError(error) {
+  try {
+    let result
+    if (error.type === 'console') {
+      // 获取完整的console错误信息
+      const consoleError = consoleStore.getLogsByLevel('error').find(log => log.id === error.id)
+      if (consoleError) {
+        result = await consoleStore.copyConsoleError(consoleError)
+      } else {
+        result = { success: false, message: '错误信息不存在' }
+      }
+    } else {
+      // 获取完整的network错误信息
+      const networkError = networkStore.errorRequests.find(req => req.id === error.id)
+      if (networkError) {
+        result = await networkStore.copyRequestDetails(networkError)
+      } else {
+        result = { success: false, message: '错误信息不存在' }
+      }
+    }
+    
+    appStore.showNotification(result.message, result.success ? 'success' : 'error')
+  } catch (error) {
+    appStore.showNotification('复制失败', 'error')
   }
 }
 </script>

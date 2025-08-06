@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import MessageUtils from '../../utils/messageUtils.js'
+import CopyUtils from '../../utils/copyUtils.js'
 
 export const useNetworkStore = defineStore('network', () => {
   // 状态
@@ -8,6 +9,8 @@ export const useNetworkStore = defineStore('network', () => {
   const loading = ref(false)
   const filterType = ref('all') // all, errors, success
   const selectedRequest = ref(null)
+  const currentTabId = ref(null)
+  const currentUrl = ref('')
   
   // 计算属性
   const filteredNetworkData = computed(() => {
@@ -46,9 +49,12 @@ export const useNetworkStore = defineStore('network', () => {
       if (MessageUtils.isExtensionEnvironment()) {
         const data = await MessageUtils.getCollectedData()
         networkData.value = data.networkData || []
+        currentTabId.value = data.tabId
+        currentUrl.value = data.url || ''
       } else {
         // 开发环境模拟数据
         networkData.value = generateMockNetworkData()
+        currentUrl.value = window.location.href
       }
     } catch (error) {
       console.error('Failed to load network data:', error)
@@ -67,6 +73,13 @@ export const useNetworkStore = defineStore('network', () => {
     }
   }
   
+  function updateTabData(tabId, url, data) {
+    currentTabId.value = tabId
+    currentUrl.value = url
+    networkData.value = data.networkData || []
+    selectedRequest.value = null
+  }
+  
   async function clearNetworkData() {
     try {
       if (MessageUtils.isExtensionEnvironment()) {
@@ -79,48 +92,29 @@ export const useNetworkStore = defineStore('network', () => {
     }
   }
   
-  async function copyAllErrors() {
+    async function copyAllErrors() {
     const errors = errorRequests.value
     if (errors.length === 0) {
       return { success: false, message: '没有网络错误可复制' }
     }
     
-    const formattedData = MessageUtils.formatNetworkDataForCopy(errors)
+    const markdownText = CopyUtils.formatNetworkErrorToMarkdown(errors)
+    const result = await CopyUtils.copyToClipboard(markdownText)
     
-    try {
-      if (MessageUtils.isExtensionEnvironment()) {
-        const result = await MessageUtils.copyToClipboard(formattedData)
-        return result.success 
-          ? { success: true, message: `已复制 ${errors.length} 条错误请求` }
-          : { success: false, message: '复制失败' }
-      } else {
-        // 开发环境使用浏览器API
-        await navigator.clipboard.writeText(formattedData)
-        return { success: true, message: `已复制 ${errors.length} 条错误请求` }
-      }
-    } catch (error) {
-      console.error('Failed to copy errors:', error)
-      return { success: false, message: '复制失败: ' + error.message }
+    if (result.success) {
+      return { success: true, message: `已复制 ${errors.length} 条错误请求` }
+    } else {
+      return result
     }
   }
-  
+
   async function copyRequestDetails(request) {
-    const formattedData = MessageUtils.formatSingleRequestForCopy(request)
-    
-    try {
-      if (MessageUtils.isExtensionEnvironment()) {
-        const result = await MessageUtils.copyToClipboard(formattedData)
-        return result.success 
-          ? { success: true, message: '请求详情已复制' }
-          : { success: false, message: '复制失败' }
-      } else {
-        await navigator.clipboard.writeText(formattedData)
-        return { success: true, message: '请求详情已复制' }
-      }
-    } catch (error) {
-      console.error('Failed to copy request details:', error)
-      return { success: false, message: '复制失败: ' + error.message }
+    if (!request) {
+      return { success: false, message: '请求信息不存在' }
     }
+    
+    const markdownText = CopyUtils.formatNetworkErrorToMarkdown(request)
+    return await CopyUtils.copyToClipboard(markdownText)
   }
   
   function setFilter(type) {
@@ -200,6 +194,8 @@ export const useNetworkStore = defineStore('network', () => {
     loading,
     filterType,
     selectedRequest,
+    currentTabId,
+    currentUrl,
     
     // 计算属性
     filteredNetworkData,
@@ -213,6 +209,7 @@ export const useNetworkStore = defineStore('network', () => {
     // 方法
     loadNetworkData,
     addNetworkRequest,
+    updateTabData,
     clearNetworkData,
     copyAllErrors,
     copyRequestDetails,
