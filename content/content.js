@@ -62,13 +62,6 @@
         }
       }
     })
-    
-    // 测试console监控是否工作
-    setTimeout(() => {
-      console.log('Diflow: Console monitoring test - this should be captured')
-      console.warn('Diflow: Console warning test')
-      console.error('Diflow: Console error test')
-    }, 1000)
   }
   
   // 监听网络请求
@@ -239,14 +232,6 @@
           throw error
         })
     }
-    
-    // 测试网络监控是否工作
-    setTimeout(() => {
-      // 发送一个测试请求
-      fetch('/api/test', { method: 'GET' }).catch(() => {
-        // 忽略错误，这只是测试
-      })
-    }, 2000)
   }
   
   // 解析响应头
