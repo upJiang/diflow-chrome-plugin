@@ -46,7 +46,7 @@ async function buildExtension() {
     console.log('🎉 构建完成！插件位置:', distDir)
     
   } catch (error) {
-    console.error('❌ 构建失败:', error)
+    console.error('构建失败:', error)
     process.exit(1)
   }
 }
