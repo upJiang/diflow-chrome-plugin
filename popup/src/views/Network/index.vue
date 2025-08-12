@@ -89,7 +89,7 @@ import RequestDetail from './components/RequestDetail/index.vue'
 const networkStore = useNetworkStore()
 const appStore = useAppStore()
 
-// 筛选器配置
+// 筛选器
 const filters = computed(() => [
   {
     key: 'all',
